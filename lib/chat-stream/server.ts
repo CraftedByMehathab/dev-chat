@@ -11,11 +11,13 @@ import {
 
 const textEncoder = new TextEncoder();
 
-/** LangGraph stream events that carry message content. */
-const LANGGRAPH_MESSAGE_EVENTS: readonly string[] = [
-  "messages/partial",
-  "messages/complete",
-];
+/**
+ * LangGraph stream events that carry message content.
+ * Only partials: the last partial already holds the full text. "messages/complete"
+ * resends it under the provider's id (msg_…, not run-…), which would show as a
+ * second bubble, and also replays messages already in the thread's state.
+ */
+const LANGGRAPH_MESSAGE_EVENTS: readonly string[] = ["messages/partial"];
 
 /** LangGraph message types produced by the AI (excludes human, tool, system). */
 const LANGGRAPH_AI_MESSAGE_TYPES: readonly string[] = ["ai", "AIMessageChunk"];
