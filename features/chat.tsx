@@ -93,20 +93,25 @@ export function Chat({ initialThreadId }: ChatProps) {
     return newThreadId;
   }
 
-  async function sendMessage(rawText: string) {
+  // Returns whether the message was accepted, so the input knows to clear
+  function sendMessage(rawText: string): boolean {
     const message = rawText.trim();
-    if (!message || isStreaming) return;
+    if (!message || isStreaming) return false;
 
     if (message.length > MAX_USER_MESSAGE_CHARS) {
       showError(
         `Message is too long (max ${MAX_USER_MESSAGE_CHARS} characters).`,
       );
-      return;
+      return false;
     }
 
     addMessage({ role: "user", content: message });
     setIsStreaming(true);
+    void streamReply(message);
+    return true;
+  }
 
+  async function streamReply(message: string) {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
@@ -210,7 +215,7 @@ export function Chat({ initialThreadId }: ChatProps) {
         <div className="flex-1">
           <PromptInput
             disabled={isStreaming}
-            onSubmit={(text: string) => void sendMessage(text)}
+            onSubmit={sendMessage}
           />
         </div>
         {isStreaming && (
