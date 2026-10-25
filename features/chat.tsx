@@ -59,6 +59,9 @@ export function Chat({ initialThreadId }: ChatProps) {
   const showError = (content: string) =>
     addMessage({ role: "assistant", content, isError: true });
 
+  /** Session is gone: reload so the proxy redirects to sign-in. */
+  const handleUnauthorized = () => window.location.reload();
+
   /** Replaces an AI message's text by id, or adds it if new (stream sends full text so far). */
   const upsertAssistantMessage = (id: string, content: string) =>
     setMessages((prev) => {
@@ -74,6 +77,10 @@ export function Chat({ initialThreadId }: ChatProps) {
     if (threadId) return threadId;
 
     const res = await fetch("/api/threads", { method: "POST" });
+    if (res.status === 401) {
+      handleUnauthorized();
+      throw new Error("Your session expired. Redirecting to sign in…");
+    }
     if (!res.ok)
       throw new Error(
         await readErrorMessage(res, "Could not start a new chat."),
@@ -112,6 +119,11 @@ export function Chat({ initialThreadId }: ChatProps) {
         body: JSON.stringify({ threadId: currentThreadId, message }), // text only
         signal: abortController.signal,
       });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
 
       // 4xx/5xx before streaming starts come back as JSON, not SSE
       if (!res.ok || !res.body) {
