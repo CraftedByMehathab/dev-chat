@@ -18,7 +18,7 @@ docker compose up -d        # local Postgres 15 on :5432
 npm install                 # postinstall runs `prisma generate`
 npx prisma migrate dev      # apply migrations / create a new one after editing prisma/schema.prisma
 npm run dev                 # Next dev server on :3000
-npm run build               # prisma generate && next build
+npm run build               # (prisma migrate deploy if VERCEL_ENV=production) && prisma generate && next build
 npm run lint                # eslint
 ```
 
@@ -37,7 +37,7 @@ There is no test suite in either project.
 
 ## Environment
 
-Root `.env.local` needs `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `LANGGRAPH_SERVER_URL`, `LANGGRAPH_ASSISTANT_ID`, and optionally `LANGGRAPH_API_KEY` (empty locally). `lib/langgraph.ts` calls `requireEnv` at import time, so a missing LangGraph variable crashes any route that imports it. The model API key (`ANTHROPIC_API_KEY`) belongs in `agent/.env`, not the web app.
+Root `.env.local` needs `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `LANGGRAPH_SERVER_URL`, `LANGGRAPH_ASSISTANT_ID`, and optionally `LANGGRAPH_API_KEY` (empty locally). In production, `DATABASE_URL` is Neon's pooled URL (runtime) and `DIRECT_URL` the direct one, which the Prisma CLI prefers (`prisma.config.ts`) because migrate can't run through the pooler. Production builds run `prisma migrate deploy`; preview and local builds skip it. Node 24 is required (Prisma 7's CLI fails on Node < 22.12). `lib/langgraph.ts` calls `requireEnv` at import time, so a missing LangGraph variable crashes any route that imports it. The model API key (`ANTHROPIC_API_KEY`) belongs in `agent/.env`, not the web app.
 
 ## Architecture
 
