@@ -14,8 +14,6 @@ import { jsonError } from "@/lib/http";
 import { LANGGRAPH_ASSISTANT_ID, langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
 
-// export const runtime = "nodejs";
-// export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
@@ -70,6 +68,7 @@ export async function POST(req: Request) {
             streamMode: ["messages"],
             multitaskStrategy: "reject", // 2nd run on a busy thread → 409
             signal: req.signal,
+            onDisconnect: "cancel",
           },
         );
 
