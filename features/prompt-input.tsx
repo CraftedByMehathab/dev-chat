@@ -7,7 +7,17 @@ import {
 import { ArrowUpIcon } from "lucide-react";
 import React, { useState } from "react";
 
-export const PromptInput = ({ onSubmit, formRef, disabled }: any) => {
+type PromptInputProps = {
+  onSubmit: (text: string) => void;
+  formRef?: React.Ref<HTMLFormElement>;
+  disabled?: boolean;
+};
+
+export const PromptInput = ({
+  onSubmit,
+  formRef,
+  disabled,
+}: PromptInputProps) => {
   const [text, setText] = useState("");
   const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
