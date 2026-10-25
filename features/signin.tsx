@@ -1,0 +1,19 @@
+import { signIn } from "@/auth";
+import { Button } from "@/components/ui/button";
+import { FaGithub } from "react-icons/fa";
+
+export default function SignIn() {
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signIn("github");
+      }}
+    >
+      <Button type="submit">
+        <FaGithub />
+        Signin with GitHub
+      </Button>
+    </form>
+  );
+}
