@@ -50,7 +50,7 @@ Root `.env.local` needs `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_G
 - The server builds the run input itself (a single human message). The client can never inject AI, system or tool messages, or other state keys.
 - Only AI message text goes to the browser. `extractStreamedAIMessages` drops tool calls, metadata, and human/tool/system messages.
 - `multitaskStrategy: "reject"` makes LangGraph return 409 when a run is already active on the thread. It's mapped to the `THREAD_BUSY` error code.
-- `req.signal` is passed through, so the client's Stop button (AbortController) cancels the upstream run.
+- `req.signal` and `onDisconnect: "cancel"` are passed through, so the client's Stop button (AbortController) cancels the upstream run.
 
 **SSE protocol (`lib/chat-stream/`).** `shared.ts` holds the event names (`token`, `done`, `error`), error codes and payload types used by both sides. `server.ts` is server-only (Zod schema, writer, LangGraph chunk filtering). `client.ts` parses SSE from a `fetch` body, since `EventSource` can't POST. A `token` event carries the **full text so far** for each AI message ID, not a delta, and the client upserts by ID. Errors that happen before streaming starts come back as JSON `{ error }` via `jsonError`, not SSE.
 
