@@ -1,11 +1,10 @@
-import { Chat } from "@/features/chat";
-import SignIn from "@/features/signin";
+import { Suspense } from "react";
+import SignIn from "@/features/auth/signin";
 
-export default function Home() {
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <div className="border-2">
-      <SignIn />
-      <Chat />
-    </div>
+    <Suspense>
+      <SignIn searchParams={searchParams} />
+    </Suspense>
   );
 }
