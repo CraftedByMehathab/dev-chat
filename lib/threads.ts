@@ -11,6 +11,22 @@ export const findOwnedThread = (threadId: string, userId: string) =>
   });
 
 /**
+ * The user's threads for the sidebar, newest activity first. Hides archived
+ * threads and ones that were never messaged. Served by the
+ * [userId, archived, lastMessageAt] index.
+ */
+export const listOwnedThreads = (userId: string) =>
+  prisma.chatThread.findMany({
+    where: { userId, archived: false, lastMessageAt: { not: null } },
+    orderBy: { lastMessageAt: "desc" },
+    select: { id: true, title: true, lastMessageAt: true },
+  });
+
+export type OwnedThreadSummary = Awaited<
+  ReturnType<typeof listOwnedThreads>
+>[number];
+
+/**
  * Creates the LangGraph thread first, then the ChatThread row that records
  * ownership. If the row fails, deletes the LangGraph thread so nobody is left
  * holding an orphan. Returns the shared thread id.
