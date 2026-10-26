@@ -18,7 +18,8 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
       <MessageContent>
         <Bubble
           align={align}
-          variant={message.role === "user" ? "muted" : undefined}
+          // AI replies read as plain text; a lime bubble would be too loud
+          variant={message.role === "user" ? "muted" : "ghost"}
         >
           <BubbleContent>
             {message.isError ? (
