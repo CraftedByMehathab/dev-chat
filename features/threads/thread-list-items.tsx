@@ -34,38 +34,33 @@ export function ThreadListItems({
           thread.lastMessageAt &&
           lastActivityFormat.format(thread.lastMessageAt);
 
+        // Rows show only the title; the time is in the hover hint
+        const hint = lastActivity
+          ? `${thread.title} · ${lastActivity}`
+          : thread.title;
+
         return (
           <SidebarMenuItem key={thread.id}>
             <SidebarMenuButton
               asChild
               isActive={isActive}
-              // Collapsed to icons, the tooltip carries what the row can't show
-              tooltip={
-                lastActivity
-                  ? `${thread.title} · ${lastActivity}`
-                  : thread.title
-              }
-              className="h-auto"
+              // Shown when collapsed to icons
+              tooltip={hint}
+              className="h-9"
             >
-              <Link href={href} aria-current={isActive ? "page" : undefined}>
+              <Link
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+                // Shown when expanded. Server and browser time zones can differ.
+                title={hint}
+                suppressHydrationWarning
+              >
                 <MessageSquareIcon
                   className={
                     isActive ? "text-primary" : "text-muted-foreground"
                   }
                 />
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate">{thread.title}</span>
-                  {thread.lastMessageAt && (
-                    // Server and browser time zones can differ
-                    <time
-                      dateTime={thread.lastMessageAt.toISOString()}
-                      className="text-xs font-normal text-muted-foreground"
-                      suppressHydrationWarning
-                    >
-                      {lastActivity}
-                    </time>
-                  )}
-                </span>
+                <span>{thread.title}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -42,7 +42,9 @@ export function ThreadSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Chats</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-mono text-[11px] tracking-widest uppercase">
+            Conversations
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             {/* The list reads the session, so it streams in behind a boundary */}
             <Suspense fallback={<ThreadListSkeleton />}>
@@ -66,7 +68,7 @@ function ThreadListSkeleton() {
   return (
     <div className="flex flex-col gap-2 px-2 group-data-[collapsible=icon]:hidden">
       {SKELETON_WIDTHS.map((width) => (
-        <Skeleton key={width} className={`h-10 ${width}`} />
+        <Skeleton key={width} className={`h-8 ${width}`} />
       ))}
     </div>
   );

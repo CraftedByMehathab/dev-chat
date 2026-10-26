@@ -7,7 +7,7 @@ import { prisma } from "@/prisma";
 export const findOwnedThread = (threadId: string, userId: string) =>
   prisma.chatThread.findFirst({
     where: { id: threadId, userId },
-    select: { id: true },
+    select: { id: true, title: true },
   });
 
 /**
