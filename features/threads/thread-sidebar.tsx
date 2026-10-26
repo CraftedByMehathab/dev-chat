@@ -31,7 +31,7 @@ export function ThreadSidebar() {
         <SidebarHeader className="gap-4 py-4">
           <div className="flex h-8 items-center gap-2 px-2 group-data-[collapsible=icon]:px-0">
             <Image
-              src="/favicon.png"
+              src="/logo.png"
               alt=""
               width={32}
               height={32}
