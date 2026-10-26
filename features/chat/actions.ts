@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { chatPath, homePath } from "@/lib/paths";
+import { chatsPath, homePath } from "@/lib/paths";
 import { createOwnedThread } from "@/lib/threads";
 
 export type NewChatState = { error: string } | null;
@@ -23,5 +23,5 @@ export async function startNewChat(): Promise<NewChatState> {
   }
 
   // Outside the try: redirect() works by throwing
-  redirect(chatPath(threadId));
+  redirect(chatsPath(threadId));
 }

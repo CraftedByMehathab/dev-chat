@@ -1,4 +1,4 @@
 export const dashboardPath = () => "/dashboard";
 export const homePath = () => "/";
-export const chatsPath = () => "/chat";
-export const chatPath = (threadId: string) => `${chatsPath()}/${threadId}`;
+export const chatsPath = (threadId?: string) =>
+  `/chat${threadId ? `/${threadId}` : ""}`;
