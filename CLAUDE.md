@@ -41,9 +41,9 @@ Root `.env.local` needs `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_G
 
 ## Architecture
 
-**Request flow.** `features/chat/` (client) → `POST /api/threads` on the first message → `POST /api/chat-stream` with `{ threadId, message }` → LangGraph server `runs.stream` → SSE back to the browser.
+**Request flow.** The New chat button (`features/chat/new-chat-button.tsx`) calls the `startNewChat` server action, which creates the thread and redirects to `/chat/[threadId]`. That page checks ownership (unknown or other users' threads → `notFound()`) and renders `Chat` (`features/chat/`, client) with the thread ID. Each message → `POST /api/chat-stream` with `{ threadId, message }` → LangGraph server `runs.stream` → SSE back to the browser. Streaming stays a route handler, not a server action: actions can't be aborted (Stop must cancel the run) and run one at a time per client.
 
-**Threads.** A chat thread's ID is the LangGraph thread ID. `app/api/threads/route.ts` creates the LangGraph thread first, then a `ChatThread` row in Postgres for ownership; if the DB insert fails it deletes the LangGraph thread. Every chat-stream request checks that the thread belongs to the session user before running.
+**Threads.** A chat thread's ID is the LangGraph thread ID. `createOwnedThread` in `lib/threads.ts` creates the LangGraph thread first, then a `ChatThread` row in Postgres for ownership; if the DB insert fails it deletes the LangGraph thread. `findOwnedThread` in the same file is the single ownership check: the chat page and every chat-stream request use it to confirm the thread belongs to the session user before running.
 
 **Chat stream security boundary.** `/api/chat-stream` is deliberately narrow, so keep it that way when changing it:
 - The body is validated by a `.strict()` Zod schema (`ChatStreamRequestSchema`): only `threadId` and `message`, with a max length of `MAX_USER_MESSAGE_CHARS`.
@@ -58,6 +58,6 @@ Root `.env.local` needs `DATABASE_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_G
 
 **Database.** Prisma 7 with the `prisma-client` generator, which outputs to `generated/prisma` (gitignored). Import from `@/generated/prisma/client`, not `@prisma/client`. The client is a singleton in `prisma.ts` at the repo root (`import { prisma } from "@/prisma"`), using the `@prisma/adapter-pg` driver adapter. The datasource URL lives in `prisma.config.ts`, not the schema.
 
-**UI.** `components/ui/` holds shadcn components (style `radix-rhea`, Tailwind v4 through the `@tailwindcss/turbopack` loader in `next.config.ts`). App-level components live in `features/`. `features/chat/` is split by responsibility: `messages.ts` (pure message logic), `chat-api.ts` (the `ChatApi` transport interface and its fetch implementation), `use-chat.ts` (state and streaming; takes `api` as a dependency), `message-list.tsx` and `chat-composer.tsx` (views), `chat.tsx` (composition). `next.config.ts` turns on `cacheComponents`.
+**UI.** `components/ui/` holds shadcn components (style `radix-rhea`, Tailwind v4 through the `@tailwindcss/turbopack` loader in `next.config.ts`). App-level components live in `features/`. `features/chat/` is split by responsibility: `messages.ts` (pure message logic), `chat-api.ts` (the `ChatApi` transport interface and its fetch implementation), `use-chat.ts` (state and streaming; takes `api` as a dependency), `message-list.tsx` and `chat-composer.tsx` (views), `chat.tsx` (composition). `next.config.ts` turns on `cacheComponents`, so pages that read `params` or the session must do it inside a `<Suspense>` boundary (see `app/chat/[threadId]/page.tsx`).
 
 **Conventions.** Server-only modules start with `import "server-only"`. Use `requireEnv`/`optionalEnv` from `lib/env.ts` for env vars, and `jsonError` from `lib/http.ts` for API errors.

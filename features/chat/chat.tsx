@@ -5,14 +5,12 @@ import { MessageList } from "./message-list";
 import { useChat } from "./use-chat";
 
 type ChatProps = {
-  /** Pass an existing thread to continue it; omit to start a new one on first send. */
-  initialThreadId?: string;
+  /** The thread to chat in; it's created up front by the New chat button. */
+  threadId: string;
 };
 
-export function Chat({ initialThreadId }: ChatProps) {
-  const { messages, isStreaming, sendMessage, stop } = useChat({
-    initialThreadId,
-  });
+export function Chat({ threadId }: ChatProps) {
+  const { messages, isStreaming, sendMessage, stop } = useChat({ threadId });
 
   return (
     <div className="flex h-dvh flex-col">

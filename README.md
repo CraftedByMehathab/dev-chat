@@ -69,7 +69,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## How it works
 
-1. When you send your first message, `POST /api/threads` creates a LangGraph thread and saves it to the database under your user ID.
+1. Clicking **New chat** creates a LangGraph thread, saves it to the database under your user ID, and opens it at `/chat/<threadId>`. You can only open your own threads.
 2. Each message goes to `POST /api/chat-stream`. That route checks you own the thread, runs the agent and streams the reply back as server-sent events.
 3. The route only accepts `{ threadId, message }` and only sends AI text back. Tool calls and internal state stay on the server.
 4. While a reply is streaming, the Stop button cancels the run. If you send a new message before the reply finishes, the app tells you to wait or press Stop.
@@ -77,7 +77,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Project layout
 
 ```
-app/              Pages and API routes (auth, threads, chat-stream)
+app/              Pages and API routes (auth, chat-stream)
 features/         Chat UI components
 components/ui/    shadcn components
 lib/chat-stream/  SSE protocol shared by client and server
