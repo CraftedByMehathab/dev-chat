@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { ChatComposer } from "./chat-composer";
+import { ChatEmptyState } from "./chat-empty-state";
 import { MessageList } from "./message-list";
 import { useChat } from "./use-chat";
 
@@ -21,7 +22,11 @@ export function Chat({ threadId }: ChatProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <MessageList messages={messages} />
+      {messages.length === 0 ? (
+        <ChatEmptyState onPick={sendMessage} />
+      ) : (
+        <MessageList messages={messages} />
+      )}
       <ChatComposer
         isStreaming={isStreaming}
         onSend={sendMessage}

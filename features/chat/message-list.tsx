@@ -39,7 +39,7 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
     <MessageScrollerProvider autoScroll>
       <MessageScroller className="flex-1">
         <MessageScrollerViewport>
-          <MessageScrollerContent>
+          <MessageScrollerContent className="mx-auto w-full max-w-3xl px-4 py-6">
             {messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}

@@ -13,7 +13,7 @@ export function ChatComposer({
   onStop,
 }: ChatComposerProps) {
   return (
-    <div className="flex items-end gap-2 p-2">
+    <div className="mx-auto flex w-full max-w-3xl items-end gap-2 px-4 pb-4">
       <div className="flex-1">
         <PromptInput disabled={isStreaming} onSubmit={onSend} />
       </div>
