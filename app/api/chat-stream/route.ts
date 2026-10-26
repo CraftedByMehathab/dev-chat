@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { auth } from "@/auth";
 import {
   ChatStreamRequestSchema,
@@ -9,12 +10,13 @@ import {
 import {
   CHAT_STREAM_ERROR_CODE,
   CHAT_STREAM_EVENT,
+  type StreamedAIMessage,
 } from "@/lib/chat-stream/shared";
 import {
   DEFAULT_THREAD_TITLE,
   threadTitleFromMessage,
 } from "@/lib/thread-title";
-import { findOwnedThread } from "@/lib/threads";
+import { findOwnedThread, savePartialReply } from "@/lib/threads";
 import { jsonError } from "@/lib/http";
 import { LANGGRAPH_ASSISTANT_ID, langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
@@ -63,9 +65,26 @@ export async function POST(req: Request) {
   const runInput = { messages: [{ type: "human", content: message }] };
 
   // ── 5. Stream AI text to the browser ──────────────
+  // Keeps a serverless function alive until the handler below is done,
+  // including the partial-reply save after the client has gone
+  const streamSettled = Promise.withResolvers<void>();
+  after(() => streamSettled.promise);
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const sendEvent = createChatStreamWriter(controller);
+      let runId: string | undefined;
+      let lastReply: StreamedAIMessage | undefined; // the AI text the user has seen
+
+      // Stop: save what the user saw, so the thread matches the screen (#26)
+      const handleStop = async () => {
+        if (!runId || !lastReply) return;
+        try {
+          await savePartialReply(threadId, runId, lastReply);
+        } catch (err) {
+          console.error("chat-stream: could not save partial reply", err);
+        }
+      };
 
       try {
         const runStream = langgraphClient.runs.stream(
@@ -81,16 +100,24 @@ export async function POST(req: Request) {
         );
 
         for await (const chunk of runStream) {
+          if (chunk.event === "metadata") {
+            runId = (chunk.data as { run_id?: string }).run_id;
+          }
           if (!isLangGraphMessageEvent(chunk.event)) continue;
 
           // Only forward AI text: no tool args, metadata, or internal state
           const messages = extractStreamedAIMessages(chunk.data);
-          if (messages.length) sendEvent(CHAT_STREAM_EVENT.TOKEN, messages);
+          if (messages.length) {
+            lastReply = messages.at(-1);
+            sendEvent(CHAT_STREAM_EVENT.TOKEN, messages);
+          }
         }
 
+        // An abort can end the stream quietly instead of throwing
+        if (req.signal.aborted) return await handleStop();
         sendEvent(CHAT_STREAM_EVENT.DONE, {});
       } catch (err) {
-        if (req.signal.aborted) return; // user left or clicked Stop
+        if (req.signal.aborted) return await handleStop(); // user left or clicked Stop
 
         if (isThreadBusyError(err)) {
           sendEvent(CHAT_STREAM_EVENT.ERROR, {
@@ -109,6 +136,7 @@ export async function POST(req: Request) {
         try {
           controller.close();
         } catch {}
+        streamSettled.resolve();
       }
     },
   });
