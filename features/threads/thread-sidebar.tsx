@@ -11,7 +11,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SignOut } from "@/features/auth/signout";
+import { UserMenu } from "@/features/auth/user-menu";
 import { NewChatButton } from "@/features/chat";
 
 import { CloseSidebarOnNavigate } from "./close-sidebar-on-navigate";
@@ -55,7 +55,10 @@ export function ThreadSidebar() {
       </SidebarContent>
       <SidebarSeparator className="mx-0" />
       <SidebarFooter>
-        <SignOut />
+        {/* Reads the session too */}
+        <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+          <UserMenu />
+        </Suspense>
       </SidebarFooter>
     </Sidebar>
   );
