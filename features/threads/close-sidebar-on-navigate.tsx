@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 
 /**
@@ -12,13 +12,13 @@ import { useSidebar } from "@/components/ui/sidebar";
 export function CloseSidebarOnNavigate() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
-  const [lastPathname, setLastPathname] = useState(pathname);
 
-  // Adjusting state during render instead of in an effect, per React docs
-  if (pathname !== lastPathname) {
-    setLastPathname(pathname);
+  // An effect, not a render-time update: this state belongs to SidebarProvider,
+  // and React forbids updating another component while rendering.
+  // setOpenMobile is a stable useState setter, so this runs only on navigation.
+  useEffect(() => {
     setOpenMobile(false);
-  }
+  }, [pathname, setOpenMobile]);
 
   return null;
 }

@@ -20,47 +20,51 @@ import { ThreadList } from "./thread-list";
 // Collapses to an icon rail on desktop and a sheet on mobile
 export function ThreadSidebar() {
   return (
-    <Sidebar collapsible="icon">
-      {/* Reads the URL, which is request data on dynamic routes */}
+    <>
+      {/* Outside <Sidebar>: on mobile its children unmount with the closed
+          sheet, so this would remount on every open and close it again.
+          Suspense because it reads the URL, request data on dynamic routes. */}
       <Suspense fallback={null}>
         <CloseSidebarOnNavigate />
       </Suspense>
-      <SidebarHeader className="gap-4 py-4">
-        <div className="flex h-8 items-center gap-2 px-2 group-data-[collapsible=icon]:px-0">
-          <Image
-            src="/favicon.png"
-            alt=""
-            width={32}
-            height={32}
-            className="size-8 shrink-0"
-          />
-          <span className="truncate font-heading text-lg font-semibold group-data-[collapsible=icon]:hidden">
-            Dev Chat
-          </span>
-        </div>
-        <NewChatButton />
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-mono text-[11px] tracking-widest uppercase">
-            Conversations
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            {/* The list reads the session, so it streams in behind a boundary */}
-            <Suspense fallback={<ThreadListSkeleton />}>
-              <ThreadList />
-            </Suspense>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarSeparator className="mx-0" />
-      <SidebarFooter>
-        {/* Reads the session too */}
-        <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-          <UserMenu />
-        </Suspense>
-      </SidebarFooter>
-    </Sidebar>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="gap-4 py-4">
+          <div className="flex h-8 items-center gap-2 px-2 group-data-[collapsible=icon]:px-0">
+            <Image
+              src="/favicon.png"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 shrink-0"
+            />
+            <span className="truncate font-heading text-lg font-semibold group-data-[collapsible=icon]:hidden">
+              Dev Chat
+            </span>
+          </div>
+          <NewChatButton />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel className="font-mono text-[11px] tracking-widest uppercase">
+              Conversations
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              {/* The list reads the session, so it streams in behind a boundary */}
+              <Suspense fallback={<ThreadListSkeleton />}>
+                <ThreadList />
+              </Suspense>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarSeparator className="mx-0" />
+        <SidebarFooter>
+          {/* Reads the session too */}
+          <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+            <UserMenu />
+          </Suspense>
+        </SidebarFooter>
+      </Sidebar>
+    </>
   );
 }
 
