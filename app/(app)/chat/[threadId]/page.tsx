@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Chat } from "@/features/chat";
 import { PageHeader } from "@/features/threads/page-header";
+import { ThreadTitle } from "@/features/threads/thread-activity";
 import { getSessionUserId } from "@/lib/session";
 import { findOwnedThread, getThreadHistory } from "@/lib/threads";
 
@@ -28,7 +29,7 @@ async function OwnedChat({
 
   return (
     <>
-      <PageHeader title={thread.title} />
+      <PageHeader title={<ThreadTitle id={threadId} title={thread.title} />} />
       <div className="min-h-0 flex-1">
         {/* key: switching threads starts a fresh Chat instead of reusing state */}
         <Chat

@@ -1,6 +1,13 @@
 "use client";
 
-import { useThreadActivity } from "@/features/threads/thread-activity";
+import {
+  useThreadActivity,
+  useThreadTitle,
+} from "@/features/threads/thread-activity";
+import {
+  DEFAULT_THREAD_TITLE,
+  threadTitleFromMessage,
+} from "@/lib/thread-title";
 
 import { ChatComposer } from "./chat-composer";
 import { ChatEmptyState } from "./chat-empty-state";
@@ -11,7 +18,7 @@ import { useChat } from "./use-chat";
 type ChatProps = {
   /** The thread to chat in; it's created up front by the New chat button. */
   threadId: string;
-  /** Shown in the sidebar once the thread has a message. */
+  /** The thread's title when the page loaded. */
   title: string;
   /** Messages already in the thread, loaded by the page. */
   initialMessages?: ChatMessage[];
@@ -19,16 +26,25 @@ type ChatProps = {
 
 export function Chat({ threadId, title, initialMessages }: ChatProps) {
   const { touchThread } = useThreadActivity();
+  const currentTitle = useThreadTitle(threadId, title);
   const { messages, isStreaming, sendMessage, stop } = useChat({
     threadId,
     initialMessages,
   });
 
-  // Moves this thread to the top of the sidebar locally, mirroring the
-  // activity the server records, without refetching the route
+  // Updates the sidebar and header locally, mirroring what the server saves:
+  // activity now, and a title from the message if the thread has none
   function send(rawText: string): boolean {
     const sent = sendMessage(rawText);
-    if (sent) touchThread({ id: threadId, title });
+    if (sent) {
+      touchThread({
+        id: threadId,
+        title:
+          currentTitle === DEFAULT_THREAD_TITLE
+            ? threadTitleFromMessage(rawText)
+            : currentTitle,
+      });
+    }
     return sent;
   }
 

@@ -52,6 +52,17 @@ export function useThreadActivity() {
   return context;
 }
 
+/** A thread's current title: the one from the page, or a newer one set here. */
+export function useThreadTitle(id: string, title: string) {
+  const { activity } = useThreadActivity();
+  return activity[id]?.title ?? title;
+}
+
+/** A thread's title, updated live when its first message names it. */
+export function ThreadTitle({ id, title }: { id: string; title: string }) {
+  return useThreadTitle(id, title);
+}
+
 /** The server's threads with local activity applied, newest activity first. */
 export function mergeThreadActivity(
   threads: OwnedThreadSummary[],
