@@ -1,7 +1,8 @@
 // Thread ownership: creating threads and checking who owns them.
 import "server-only";
 import { extractHistoryMessages } from "@/lib/chat-stream/server";
-import { langgraphClient } from "@/lib/langgraph";
+import type { StreamedAIMessage } from "@/lib/chat-stream/shared";
+import { LANGGRAPH_MODEL_NODE, langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
 
 /** Returns the thread only if it belongs to the user, else null (treat as not found). */
@@ -30,6 +31,38 @@ export const listOwnedThreads = (userId: string) =>
 export async function getThreadHistory(threadId: string) {
   const { values } = await langgraphClient.threads.getState(threadId);
   return extractHistoryMessages(values);
+}
+
+/**
+ * After Stop: waits for the run to stop, then saves the partial reply the user
+ * saw. LangGraph doesn't, and without it the thread ends on an unanswered
+ * human message, so the next run answers that one instead of the new message.
+ * Skipped when the run got to save the reply itself.
+ */
+export async function savePartialReply(
+  threadId: string,
+  runId: string,
+  reply: StreamedAIMessage,
+) {
+  await langgraphClient.runs
+    .cancel(threadId, runId, true, "interrupt")
+    // Already finished or cancelled: just make sure it's done
+    .catch(() => langgraphClient.runs.join(threadId, runId));
+
+  const { values } = await langgraphClient.threads.getState(threadId);
+  const messages =
+    (values as { messages?: { id?: string; type?: string }[] } | null)
+      ?.messages ?? [];
+  const alreadySaved =
+    messages.at(-1)?.type === "ai" || messages.some((m) => m.id === reply.id);
+  if (alreadySaved) return;
+
+  await langgraphClient.threads.updateState(threadId, {
+    values: {
+      messages: [{ type: "ai", id: reply.id, content: reply.content }],
+    },
+    asNode: LANGGRAPH_MODEL_NODE,
+  });
 }
 
 export type OwnedThreadSummary = Awaited<
