@@ -1,16 +1,19 @@
 "use client";
 
-import { MessageSquareIcon } from "lucide-react";
+import { MessageSquareIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { chatsPath } from "@/lib/paths";
 import type { OwnedThreadSummary } from "@/lib/threads";
 
+import { DeleteThreadDialog } from "./delete-thread-dialog";
 import { mergeThreadActivity, useThreadActivity } from "./thread-activity";
 
 const lastActivityFormat = new Intl.DateTimeFormat(undefined, {
@@ -28,6 +31,9 @@ export function ThreadListItems({
   const pathname = usePathname();
   const { activity } = useThreadActivity();
   const merged = mergeThreadActivity(threads, activity);
+  const [pendingDelete, setPendingDelete] = useState<OwnedThreadSummary | null>(
+    null,
+  );
 
   if (merged.length === 0) {
     return (
@@ -39,6 +45,10 @@ export function ThreadListItems({
 
   return (
     <SidebarMenu>
+      <DeleteThreadDialog
+        thread={pendingDelete}
+        onClose={() => setPendingDelete(null)}
+      />
       {merged.map((thread) => {
         const href = chatsPath(thread.id);
         const isActive = pathname === href;
@@ -75,6 +85,16 @@ export function ThreadListItems({
                 <span>{thread.title}</span>
               </Link>
             </SidebarMenuButton>
+            {/* Hidden until hover or focus; hidden entirely when collapsed */}
+            <SidebarMenuAction
+              showOnHover
+              aria-label={`Delete “${thread.title}”`}
+              title="Delete chat"
+              onClick={() => setPendingDelete(thread)}
+              className="hover:text-destructive"
+            >
+              <Trash2Icon />
+            </SidebarMenuAction>
           </SidebarMenuItem>
         );
       })}

@@ -3,12 +3,15 @@
 import { createContext, useCallback, useContext, useState } from "react";
 import type { OwnedThreadSummary } from "@/lib/threads";
 
-type ThreadActivity = Record<string, OwnedThreadSummary>;
+/** A thread messaged here, or null once it's deleted. */
+type ThreadActivity = Record<string, OwnedThreadSummary | null>;
 
 type ThreadActivityContextValue = {
   activity: ThreadActivity;
   /** Records a message in this thread now, so the sidebar moves it to the top. */
   touchThread: (thread: Pick<OwnedThreadSummary, "id" | "title">) => void;
+  /** Hides a deleted thread from the sidebar. */
+  removeThread: (id: string) => void;
 };
 
 const ThreadActivityContext = createContext<ThreadActivityContextValue | null>(
@@ -16,8 +19,8 @@ const ThreadActivityContext = createContext<ThreadActivityContextValue | null>(
 );
 
 /**
- * Threads messaged since the sidebar loaded. The sidebar merges these over the
- * server's list, so a reply updates it without refetching the route.
+ * Threads messaged or deleted since the sidebar loaded. The sidebar merges
+ * these over the server's list, so it updates without refetching the route.
  */
 export function ThreadActivityProvider({
   children,
@@ -35,8 +38,13 @@ export function ThreadActivityProvider({
     [],
   );
 
+  const removeThread = useCallback(
+    (id: string) => setActivity((prev) => ({ ...prev, [id]: null })),
+    [],
+  );
+
   return (
-    <ThreadActivityContext value={{ activity, touchThread }}>
+    <ThreadActivityContext value={{ activity, touchThread, removeThread }}>
       {children}
     </ThreadActivityContext>
   );
@@ -68,10 +76,11 @@ export function mergeThreadActivity(
   threads: OwnedThreadSummary[],
   activity: ThreadActivity,
 ): OwnedThreadSummary[] {
-  const touched = Object.values(activity);
-  if (touched.length === 0) return threads;
+  const local = Object.values(activity);
+  if (local.length === 0) return threads;
 
-  const untouched = threads.filter((thread) => !activity[thread.id]);
+  const untouched = threads.filter((thread) => !(thread.id in activity));
+  const touched = local.filter((thread) => thread !== null);
   return [...touched, ...untouched].sort(
     (a, b) =>
       (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0),

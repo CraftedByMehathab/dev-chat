@@ -37,6 +37,26 @@ export type OwnedThreadSummary = Awaited<
 >[number];
 
 /**
+ * Deletes the thread if it belongs to the user; returns false if it doesn't.
+ * The row goes first, since it's what grants access. The LangGraph thread is
+ * cleaned up after, and if that fails nobody can reach it anyway.
+ */
+export async function deleteOwnedThread(
+  threadId: string,
+  userId: string,
+): Promise<boolean> {
+  const { count } = await prisma.chatThread.deleteMany({
+    where: { id: threadId, userId },
+  });
+  if (count === 0) return false;
+
+  await langgraphClient.threads.delete(threadId).catch((err) => {
+    console.error("threads: LangGraph delete failed", err);
+  });
+  return true;
+}
+
+/**
  * Creates the LangGraph thread first, then the ChatThread row that records
  * ownership. If the row fails, deletes the LangGraph thread so nobody is left
  * holding an orphan. Returns the shared thread id.
