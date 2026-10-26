@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, DM_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { themeScript, ThemeSync } from "@/features/theme";
+import { ThemeProvider } from "@/features/theme";
 import { cn } from "@/lib/utils";
 
 const spaceGroteskHeading = Space_Grotesk({
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      // The head script adds `dark` and color-scheme before React hydrates
+      // next-themes adds `dark` and color-scheme before React hydrates
       suppressHydrationWarning
       className={cn(
         "h-full",
@@ -43,12 +43,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         spaceGroteskHeading.variable,
       )}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
       <body className="min-h-full flex flex-col">
-        <ThemeSync />
-        <TooltipProvider>{children}</TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

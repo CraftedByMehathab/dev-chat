@@ -1,6 +1,7 @@
 "use client";
 
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,28 +14,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { THEME_PREFERENCES, type ThemePreference } from "./theme";
-import { setThemePreference, useThemePreference } from "./use-theme";
-
 const THEME_OPTIONS = [
   { value: "light", label: "Light", icon: SunIcon },
   { value: "dark", label: "Dark", icon: MoonIcon },
   { value: "system", label: "System", icon: MonitorIcon },
-] satisfies { value: ThemePreference; label: string; icon: typeof SunIcon }[];
-
-const isThemePreference = (value: string): value is ThemePreference =>
-  (THEME_PREFERENCES as readonly string[]).includes(value);
+];
 
 function ThemeRadioItems() {
-  const preference = useThemePreference();
+  // `theme` is undefined until mount, but the menu only renders once opened
+  const { theme, setTheme } = useTheme();
 
   return (
-    <DropdownMenuRadioGroup
-      value={preference}
-      onValueChange={(value) => {
-        if (isThemePreference(value)) setThemePreference(value);
-      }}
-    >
+    <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
       {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
         <DropdownMenuRadioItem key={value} value={value}>
           <Icon />

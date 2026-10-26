@@ -1,3 +1,2 @@
-export { themeScript } from "./theme";
+export { ThemeProvider } from "./theme-provider";
 export { ThemeSubMenu, ThemeToggle } from "./theme-menu";
-export { ThemeSync } from "./theme-sync";
