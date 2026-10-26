@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, DM_Sans, Noto_Sans } from "next/font/google";
+import { Geist, Geist_Mono, DM_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const notoSansHeading = Noto_Sans({
+const spaceGroteskHeading = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-heading",
 });
@@ -30,16 +31,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={cn(
+        // Dark only for now; the light tokens stay for a future theme toggle
+        "dark",
         "h-full",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
         "font-sans",
         dmSans.variable,
-        notoSansHeading.variable,
+        spaceGroteskHeading.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TooltipProvider>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

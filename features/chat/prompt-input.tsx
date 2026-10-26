@@ -4,7 +4,7 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { ArrowUpIcon } from "lucide-react";
+import { CornerDownLeftIcon } from "lucide-react";
 import React, { useState } from "react";
 
 type PromptInputProps = {
@@ -38,19 +38,22 @@ export const PromptInput = ({
           value={text}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask the agent to change your code..."
+          placeholder="Ask anything about code…"
           className="p-3"
         />
         <InputGroupAddon align="block-end">
+          <span className="font-mono text-[11px] text-muted-foreground">
+            ⏎ send · ⇧⏎ newline
+          </span>
           <InputGroupButton
             type="submit"
             size="icon-sm"
             variant="default"
-            className="ml-auto rounded-full"
+            className="ml-auto rounded-md"
             disabled={disabled}
             aria-label="Send"
           >
-            <ArrowUpIcon />
+            <CornerDownLeftIcon />
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>

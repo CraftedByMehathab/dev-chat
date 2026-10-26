@@ -18,7 +18,8 @@ function ChatMessageBubble({ message }: { message: ChatMessage }) {
       <MessageContent>
         <Bubble
           align={align}
-          variant={message.role === "user" ? "muted" : undefined}
+          // AI replies read as plain text; a lime bubble would be too loud
+          variant={message.role === "user" ? "muted" : "ghost"}
         >
           <BubbleContent>
             {message.isError ? (
@@ -38,7 +39,7 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
     <MessageScrollerProvider autoScroll>
       <MessageScroller className="flex-1">
         <MessageScrollerViewport>
-          <MessageScrollerContent>
+          <MessageScrollerContent className="mx-auto w-full max-w-3xl px-4 py-6">
             {messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}

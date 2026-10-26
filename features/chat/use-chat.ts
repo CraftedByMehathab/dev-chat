@@ -21,6 +21,8 @@ type UseChatOptions = {
   api?: ChatApi;
   /** Session is gone. Defaults to a reload so the proxy redirects to sign-in. */
   onUnauthorized?: () => void;
+  /** Called after each reply ends, whether it finished, failed or was stopped. */
+  onReplySettled?: () => void;
 };
 
 const reloadPage = () => window.location.reload();
@@ -30,6 +32,7 @@ export function useChat({
   threadId,
   api = httpChatApi,
   onUnauthorized = reloadPage,
+  onReplySettled,
 }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -82,6 +85,7 @@ export function useChat({
     } finally {
       setIsStreaming(false);
       abortControllerRef.current = null;
+      onReplySettled?.();
     }
   }
 
