@@ -8,6 +8,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { SignInWithCallback } from "@/features/auth/sign-in-button";
+import { ThemeToggle } from "@/features/theme";
 
 // Only claims the app can back up today
 const FEATURES = [
@@ -57,7 +58,10 @@ export function LandingPage({ searchParams }: LandingPageProps) {
             />
             <span className="font-heading text-lg font-semibold">Dev Chat</span>
           </div>
-          <SignInWithCallback searchParams={searchParams} variant="outline" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <SignInWithCallback searchParams={searchParams} variant="outline" />
+          </div>
         </div>
       </header>
 

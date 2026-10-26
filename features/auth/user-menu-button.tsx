@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ThemeSubMenu } from "@/features/theme";
 
 import { signOutAction } from "./actions";
 
@@ -67,6 +68,8 @@ export function UserMenuButton({ name, email, image }: UserMenuButtonProps) {
             className="w-56"
           >
             <DropdownMenuLabel className="truncate">{label}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <ThemeSubMenu />
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
