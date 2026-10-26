@@ -50,7 +50,7 @@ export function LandingPage({ searchParams }: LandingPageProps) {
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <div className="flex items-center gap-3">
             <Image
-              src="/favicon.png"
+              src="/logo.png"
               alt=""
               width={32}
               height={32}

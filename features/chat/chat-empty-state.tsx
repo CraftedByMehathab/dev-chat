@@ -14,7 +14,7 @@ export function ChatEmptyState({ onPick }: { onPick: (text: string) => void }) {
     <div className="flex flex-1 flex-col items-center justify-center gap-8 overflow-y-auto px-4 py-8">
       <div className="flex flex-col items-center gap-3 text-center">
         <Image
-          src="/favicon.png"
+          src="/logo.png"
           alt=""
           width={48}
           height={48}
