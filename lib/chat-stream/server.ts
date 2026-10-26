@@ -6,6 +6,7 @@ import {
   MAX_USER_MESSAGE_CHARS,
   type ChatStreamEvent,
   type ChatStreamPayload,
+  type HistoryMessage,
   type StreamedAIMessage,
 } from "./shared";
 
@@ -96,3 +97,26 @@ export const extractStreamedAIMessages = (
     const content = messageContentToText(message.content);
     return message.id && content ? [{ id: message.id, content }] : [];
   });
+
+/** LangGraph message types kept in history, mapped to chat roles. */
+const HISTORY_ROLES: Record<string, HistoryMessage["role"]> = {
+  human: "user",
+  ai: "assistant",
+};
+
+/**
+ * From a thread's saved state, keep only human and AI text, in order.
+ * Same rule as streaming: tool and system messages, tool calls and metadata
+ * are dropped, and so are AI messages that only called a tool.
+ */
+export const extractHistoryMessages = (values: unknown): HistoryMessage[] => {
+  const messages = (values as { messages?: unknown } | null)?.messages;
+  return (Array.isArray(messages) ? messages : []).flatMap((message, index) => {
+    const role = HISTORY_ROLES[(message as { type?: unknown })?.type as string];
+    if (!role) return [];
+    const content = messageContentToText(message.content);
+    // Ids come from LangGraph; the index fallback only keeps React keys unique
+    const id = typeof message.id === "string" ? message.id : `history-${index}`;
+    return content ? [{ id, role, content }] : [];
+  });
+};

@@ -18,11 +18,11 @@ import {
 
 type UseChatOptions = {
   threadId: string;
+  /** Starting messages; later changes are ignored, like useState's initial value. */
+  initialMessages?: ChatMessage[];
   api?: ChatApi;
   /** Session is gone. Defaults to a reload so the proxy redirects to sign-in. */
   onUnauthorized?: () => void;
-  /** Called after each reply ends, whether it finished, failed or was stopped. */
-  onReplySettled?: () => void;
 };
 
 const reloadPage = () => window.location.reload();
@@ -30,11 +30,11 @@ const reloadPage = () => window.location.reload();
 /** Owns the conversation: message list, streaming state, and Stop. */
 export function useChat({
   threadId,
+  initialMessages = [],
   api = httpChatApi,
   onUnauthorized = reloadPage,
-  onReplySettled,
 }: UseChatOptions) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -85,7 +85,6 @@ export function useChat({
     } finally {
       setIsStreaming(false);
       abortControllerRef.current = null;
-      onReplySettled?.();
     }
   }
 

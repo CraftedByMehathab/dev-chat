@@ -10,6 +10,10 @@ import {
   CHAT_STREAM_ERROR_CODE,
   CHAT_STREAM_EVENT,
 } from "@/lib/chat-stream/shared";
+import {
+  DEFAULT_THREAD_TITLE,
+  threadTitleFromMessage,
+} from "@/lib/thread-title";
 import { findOwnedThread } from "@/lib/threads";
 import { jsonError } from "@/lib/http";
 import { LANGGRAPH_ASSISTANT_ID, langgraphClient } from "@/lib/langgraph";
@@ -41,10 +45,16 @@ export async function POST(req: Request) {
   const thread = await findOwnedThread(threadId, userId);
   if (!thread) return jsonError("Thread not found", 404);
 
-  // Mark activity now, so Stop or a late failure can't skip it
+  // Mark activity now, so Stop or a late failure can't skip it.
+  // An untitled thread is named after this message (the client does the same).
   await prisma.chatThread.update({
     where: { id: threadId },
-    data: { lastMessageAt: new Date() },
+    data: {
+      lastMessageAt: new Date(),
+      ...(thread.title === DEFAULT_THREAD_TITLE && {
+        title: threadTitleFromMessage(message),
+      }),
+    },
   });
 
   // ── 4. Server builds the input ────────────────────

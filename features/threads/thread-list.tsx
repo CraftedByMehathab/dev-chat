@@ -9,13 +9,5 @@ export async function ThreadList() {
   if (!userId) return null;
 
   const threads = await listOwnedThreads(userId);
-  if (threads.length === 0) {
-    return (
-      <p className="px-2 py-1 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
-        No chats yet. Start one with New chat.
-      </p>
-    );
-  }
-
   return <ThreadListItems threads={threads} />;
 }

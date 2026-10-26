@@ -1,5 +1,6 @@
 // Thread ownership: creating threads and checking who owns them.
 import "server-only";
+import { extractHistoryMessages } from "@/lib/chat-stream/server";
 import { langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
 
@@ -22,9 +23,38 @@ export const listOwnedThreads = (userId: string) =>
     select: { id: true, title: true, lastMessageAt: true },
   });
 
+/**
+ * The thread's past human and AI messages, oldest first. Call only after
+ * findOwnedThread: this reads LangGraph directly and checks no ownership.
+ */
+export async function getThreadHistory(threadId: string) {
+  const { values } = await langgraphClient.threads.getState(threadId);
+  return extractHistoryMessages(values);
+}
+
 export type OwnedThreadSummary = Awaited<
   ReturnType<typeof listOwnedThreads>
 >[number];
+
+/**
+ * Deletes the thread if it belongs to the user; returns false if it doesn't.
+ * The row goes first, since it's what grants access. The LangGraph thread is
+ * cleaned up after, and if that fails nobody can reach it anyway.
+ */
+export async function deleteOwnedThread(
+  threadId: string,
+  userId: string,
+): Promise<boolean> {
+  const { count } = await prisma.chatThread.deleteMany({
+    where: { id: threadId, userId },
+  });
+  if (count === 0) return false;
+
+  await langgraphClient.threads.delete(threadId).catch((err) => {
+    console.error("threads: LangGraph delete failed", err);
+  });
+  return true;
+}
 
 /**
  * Creates the LangGraph thread first, then the ChatThread row that records

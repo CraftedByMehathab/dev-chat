@@ -20,6 +20,13 @@ export type StreamedAIMessage = {
   content: string;
 };
 
+/** One past message from the thread, as rendered when a chat is reopened. */
+export type HistoryMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
 /** Machine-readable error codes, so the UI can react without parsing text. */
 export const CHAT_STREAM_ERROR_CODE = {
   THREAD_BUSY: "THREAD_BUSY",
