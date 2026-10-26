@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+@AGENTS.md
+
 ## Overview
 
 A Next.js 16 (App Router, React 19) chat UI that proxies conversations to a LangGraph agent. The repo has two separate projects:
