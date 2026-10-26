@@ -2,7 +2,9 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/prisma";
-import { dashboardPath, homePath } from "./lib/paths";
+import { chatsPath, dashboardPath, homePath } from "./lib/paths";
+
+const protectedPaths = [dashboardPath(), chatsPath()];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -20,7 +22,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // Logged in users are authenticated, otherwise redirect to login page
-      return pathname.startsWith(dashboardPath()) ? !!auth : true;
+      const isProtected = protectedPaths.some((path) =>
+        pathname.startsWith(path),
+      );
+      return isProtected ? !!auth : true;
     },
   },
 });

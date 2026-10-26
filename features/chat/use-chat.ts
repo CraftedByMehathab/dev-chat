@@ -17,8 +17,7 @@ import {
 } from "./messages";
 
 type UseChatOptions = {
-  /** Pass an existing thread to continue it; omit to start a new one on first send. */
-  initialThreadId?: string;
+  threadId: string;
   api?: ChatApi;
   /** Session is gone. Defaults to a reload so the proxy redirects to sign-in. */
   onUnauthorized?: () => void;
@@ -28,14 +27,12 @@ const reloadPage = () => window.location.reload();
 
 /** Owns the conversation: message list, streaming state, and Stop. */
 export function useChat({
-  initialThreadId,
+  threadId,
   api = httpChatApi,
   onUnauthorized = reloadPage,
-}: UseChatOptions = {}) {
+}: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  // Not rendered, so a ref: no re-render, and no stale value inside streamReply
-  const threadIdRef = useRef<string | null>(initialThreadId ?? null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const showError = (content: string) =>
@@ -43,18 +40,11 @@ export function useChat({
       appendMessage(prev, { role: "assistant", content, isError: true }),
     );
 
-  /** Returns the current thread id, creating a thread on the first message. */
-  async function getOrCreateThreadId(): Promise<string> {
-    threadIdRef.current ??= await api.createThread();
-    return threadIdRef.current;
-  }
-
   async function streamReply(message: string) {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
-      const threadId = await getOrCreateThreadId();
       await api.streamReply(
         { threadId, message, signal: abortController.signal },
         ({ event, payload }) => {

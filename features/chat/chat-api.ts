@@ -22,7 +22,6 @@ export type StreamReplyRequest = {
 
 /** What useChat needs from the backend, so it can be swapped (e.g. for a fake in tests). */
 export type ChatApi = {
-  createThread(): Promise<string>;
   streamReply(
     request: StreamReplyRequest,
     onEvent: (event: ChatStreamMessage) => void,
@@ -43,18 +42,6 @@ async function readErrorMessage(
 }
 
 export const httpChatApi: ChatApi = {
-  async createThread() {
-    const res = await fetch("/api/threads", { method: "POST" });
-    if (res.status === 401) throw new UnauthorizedError();
-    if (!res.ok)
-      throw new ChatApiError(
-        await readErrorMessage(res, "Could not start a new chat."),
-      );
-
-    const { threadId } = (await res.json()) as { threadId: string };
-    return threadId;
-  },
-
   async streamReply({ threadId, message, signal }, onEvent) {
     const res = await fetch("/api/chat-stream", {
       method: "POST",

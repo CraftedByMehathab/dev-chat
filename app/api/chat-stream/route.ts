@@ -10,6 +10,7 @@ import {
   CHAT_STREAM_ERROR_CODE,
   CHAT_STREAM_EVENT,
 } from "@/lib/chat-stream/shared";
+import { findOwnedThread } from "@/lib/threads";
 import { jsonError } from "@/lib/http";
 import { LANGGRAPH_ASSISTANT_ID, langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
@@ -37,10 +38,7 @@ export async function POST(req: Request) {
   const { threadId, message } = parsed.data;
 
   // ── 3. Ownership check ────────────────────────────
-  const thread = await prisma.chatThread.findFirst({
-    where: { id: threadId, userId },
-    select: { id: true },
-  });
+  const thread = await findOwnedThread(threadId, userId);
   if (!thread) return jsonError("Thread not found", 404);
 
   // Mark activity now, so Stop or a late failure can't skip it
