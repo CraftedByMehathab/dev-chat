@@ -11,6 +11,8 @@ import {
 import { chatsPath } from "@/lib/paths";
 import type { OwnedThreadSummary } from "@/lib/threads";
 
+import { mergeThreadActivity, useThreadActivity } from "./thread-activity";
+
 const lastActivityFormat = new Intl.DateTimeFormat(undefined, {
   month: "short",
   day: "numeric",
@@ -24,10 +26,20 @@ export function ThreadListItems({
   threads: OwnedThreadSummary[];
 }) {
   const pathname = usePathname();
+  const { activity } = useThreadActivity();
+  const merged = mergeThreadActivity(threads, activity);
+
+  if (merged.length === 0) {
+    return (
+      <p className="px-2 py-1 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+        No chats yet. Start one with New chat.
+      </p>
+    );
+  }
 
   return (
     <SidebarMenu>
-      {threads.map((thread) => {
+      {merged.map((thread) => {
         const href = chatsPath(thread.id);
         const isActive = pathname === href;
         const lastActivity =

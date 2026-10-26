@@ -1,12 +1,17 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ThreadActivityProvider } from "@/features/threads/thread-activity";
 import { ThreadSidebar } from "@/features/threads/thread-sidebar";
 
 /** Signed-in pages: the thread sidebar plus the page on the right. Each page renders its own PageHeader. */
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <SidebarProvider>
-      <ThreadSidebar />
-      <SidebarInset className="h-svh overflow-hidden">{children}</SidebarInset>
+      <ThreadActivityProvider>
+        <ThreadSidebar />
+        <SidebarInset className="h-svh overflow-hidden">
+          {children}
+        </SidebarInset>
+      </ThreadActivityProvider>
     </SidebarProvider>
   );
 }

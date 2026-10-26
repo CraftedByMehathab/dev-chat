@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Chat } from "@/features/chat";
 import { PageHeader } from "@/features/threads/page-header";
 import { getSessionUserId } from "@/lib/session";
-import { findOwnedThread } from "@/lib/threads";
+import { findOwnedThread, getThreadHistory } from "@/lib/threads";
 
 export default function ChatPage({ params }: PageProps<"/chat/[threadId]">) {
   return (
@@ -24,12 +24,19 @@ async function OwnedChat({
   const thread = userId && (await findOwnedThread(threadId, userId));
   if (!thread) notFound();
 
+  const history = await getThreadHistory(threadId);
+
   return (
     <>
       <PageHeader title={thread.title} />
       <div className="min-h-0 flex-1">
         {/* key: switching threads starts a fresh Chat instead of reusing state */}
-        <Chat key={threadId} threadId={threadId} />
+        <Chat
+          key={threadId}
+          threadId={threadId}
+          title={thread.title}
+          initialMessages={history}
+        />
       </div>
     </>
   );

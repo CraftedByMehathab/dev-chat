@@ -1,5 +1,6 @@
 // Thread ownership: creating threads and checking who owns them.
 import "server-only";
+import { extractHistoryMessages } from "@/lib/chat-stream/server";
 import { langgraphClient } from "@/lib/langgraph";
 import { prisma } from "@/prisma";
 
@@ -21,6 +22,15 @@ export const listOwnedThreads = (userId: string) =>
     orderBy: { lastMessageAt: "desc" },
     select: { id: true, title: true, lastMessageAt: true },
   });
+
+/**
+ * The thread's past human and AI messages, oldest first. Call only after
+ * findOwnedThread: this reads LangGraph directly and checks no ownership.
+ */
+export async function getThreadHistory(threadId: string) {
+  const { values } = await langgraphClient.threads.getState(threadId);
+  return extractHistoryMessages(values);
+}
 
 export type OwnedThreadSummary = Awaited<
   ReturnType<typeof listOwnedThreads>
